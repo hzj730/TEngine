@@ -9,11 +9,11 @@ namespace Logic
     public class Startup
     {
 
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        static void Initialize()
-        {
-            PolymorphicRegister.Load();
-            new GameObject("GameMain").AddComponent<GameMain>();
-        }
+        //[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        //static void Initialize()
+        //{
+        //    PolymorphicRegister.Load();
+        //    new GameObject("GameMain").AddComponent<GameMain>();
+        //}
     }
 }
