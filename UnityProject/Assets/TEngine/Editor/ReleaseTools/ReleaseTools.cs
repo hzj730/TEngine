@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -217,6 +218,17 @@ namespace TEngine.Editor
             AssetDatabase.Refresh();
             BuildImp(BuildTargetGroup.iOS, BuildTarget.iOS, $"{Application.dataPath}/../Build/IOS/XCode_Project");
         }
+        
+        [MenuItem("TEngine/Quick Build/一键打包WebGL", false, 91)]
+        public static void AutomationBuildWebGL()
+        {
+            BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
+            BuildDLLCommand.BuildAndCopyDlls(target);
+            AssetDatabase.Refresh();
+            BuildInternal(target, Application.dataPath + "/../Builds/WebGL", packageVersion: GetBuildPackageVersion());
+            AssetDatabase.Refresh();
+            BuildImp(BuildTargetGroup.WebGL, BuildTarget.WebGL, $"{Application.dataPath}/../Builds/WebGL");
+        }
 
         public static void BuildImp(BuildTargetGroup buildTargetGroup, BuildTarget buildTarget, string locationPathName)
         {
@@ -225,7 +237,7 @@ namespace TEngine.Editor
 
             BuildPlayerOptions buildPlayerOptions = new BuildPlayerOptions
             {
-                scenes = new[] { "Assets/Scenes/main.unity" },
+                scenes = EditorBuildSettings.scenes.Select(scene => scene.path).ToArray(),
                 locationPathName = locationPathName,
                 targetGroup = buildTargetGroup,
                 target = buildTarget,

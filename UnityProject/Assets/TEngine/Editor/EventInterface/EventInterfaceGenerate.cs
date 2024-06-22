@@ -13,6 +13,7 @@ Example:
 ************************************************************************************************************/
 #endregion
 
+using HybridCLR.Editor.Settings;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -186,14 +187,20 @@ public static class EventInterfaceGenerate
                         var parameterInfo = parameterInfos[i];
                         Type type = parameterInfo.ParameterType;
                         string paramName = parameterInfo.Name;
+
+                        if (type.FullName.StartsWith("System.Collections.Generic.List"))
+                        {
+                            Debug.Log("123");
+                        }
+                        
                         if (i == parameterInfos.Length - 1)
                         {
-                            paramStr += $"{type.FullName} {paramName}";
+                            paramStr += $"{GetTypeName(parameterInfo)} {paramName}";
                             paramStr2 += $"{paramName}";
                         }
                         else
                         {
-                            paramStr += $"{type.FullName} {paramName},";
+                            paramStr += $"{GetTypeName(parameterInfo)} {paramName},";
                             paramStr2 += $"{paramName},";
                         }
                     }
@@ -212,6 +219,63 @@ public static class EventInterfaceGenerate
                 sw.WriteLine("}");
             }
         }
+    }
+
+    private static string GetTypeName(ParameterInfo parameterInfo)
+    {
+        if (parameterInfo.ParameterType.IsList() && parameterInfo.ParameterType.IsGenericType)
+        {
+            string typeName = parameterInfo.ParameterType.FullName.Split('`')[0];
+            
+            return $"{typeName}<{parameterInfo.ParameterType.GenericTypeArguments[0].FullName}>";
+        }
+        else if (parameterInfo.ParameterType.IsDictionary() && parameterInfo.ParameterType.IsGenericType)
+        {
+            string typeName = parameterInfo.ParameterType.FullName.Split('`')[0];
+            
+            return $"{typeName}<{parameterInfo.ParameterType.GenericTypeArguments[0].FullName},{parameterInfo.ParameterType.GenericTypeArguments[1].FullName}>";
+        }
+        else
+        {
+            return parameterInfo.ParameterType.FullName;
+        }
+    }
+    
+    /// <summary>
+    /// 判断类型是否为可操作的列表类型
+    /// </summary>
+    /// <param name="type"></param>
+    /// <returns></returns>
+    public static bool IsList(this Type type)
+    {
+        if (typeof (System.Collections.IList).IsAssignableFrom(type))
+        {
+            return true;
+        }
+
+        foreach (var it in type.GetInterfaces())
+        {
+            if (it.IsGenericType && typeof (IList<>) == it.GetGenericTypeDefinition())
+                return true;
+        }
+
+        return false;
+    }
+    
+    public static bool IsDictionary(this Type type)
+    {
+        if (typeof (System.Collections.IDictionary).IsAssignableFrom(type))
+        {
+            return true;
+        }
+
+        foreach (var it in type.GetInterfaces())
+        {
+            if (it.IsGenericType && typeof (IDictionary) == it.GetGenericTypeDefinition())
+                return true;
+        }
+
+        return false;
     }
 }
 
